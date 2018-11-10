@@ -1,0 +1,97 @@
+---
+title: "Assignment 10 (R)"
+author: "Glenn Niles"
+date: "11-8-2018"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Efficiency
+
+a. Install and load the `multcomp` package, to allow testing for statistically significant differences in function timings.
+```{r}
+library(multcomp)
+```
+
+Load other necessary packages here.
+```{r}
+library(readr)
+library(dplyr)
+library(ggformula)
+library(microbenchmark)
+```
+
+
+In this problem, you will work with the cleaned  version of the US News and World Report data on colleges and universities, which you created in Homework 9.  
+
+b.	Read the data into R.  
+
+```{r}
+usnews = read_csv("usnewsR.csv")
+```
+Use the following code to change spaces in column names into underscores (_).  Change the name of the data frame to match what you called the data frame when you read it into R.
+```{r}
+names(usnews) = make.names(names(usnews))
+```
+
+Write a function using a method of your choice to determine how many schools have a per-student instructional expenditure (`Instructional.expenditure.per.student`) higher than their out-of-state tuition (`Out.of.state.tuition`).  
+- Your function for this part of the problem should not use control flow.
+- Functions from `dplyr` may be useful here.
+- Alternatively, the built-in functions `length` and `which` may be useful.
+
+```{r}
+NoControlFlow <- function(usnews) {
+  length(which(usnews$Instructional.expenditure.per.student > usnews$Out.of.state.tuition))
+}
+```
+
+Run the function.
+
+```{r}
+NoControlFlow(usnews)
+```
+
+c. Write a function using control flow to determine how many schools have a per-student instructional expenditure higher than their out-of-state tuition.  
+
+```{r}
+WithControlFlow <- function(usnews){
+  count = 0
+  num.rows = dim(usnews)[1]
+  for(i in 1:num.rows){
+    if( length(which(usnews[i, 34] > usnews[i, 23])))
+      count = count + 1
+  }
+  return(count)
+}
+```
+
+Run the function and check that you get the same answer as in part b.
+
+```{r}
+count = WithControlFlow(usnews)
+count
+```
+
+d. Use `microbenchmark` to compare the running times of the two methods you wrote in parts b and c.  
+
+```{r}
+timings = microbenchmark(
+  NoControlFlow(usnews),
+  WithControlFlow(usnews)
+)
+timings
+```
+
+- **Write 1-2 sentences** answering the following:  Is there a significant difference in the running times of the two methods?  If so, which is more efficient?
+
+There is a significant difference in the amount of time it takes to run the two functions. The function without control flow is much, much faster than the function using flow control.
+
+e. Make a boxplot showing the timing comparison of the two methods.
+```{r}
+gf_boxplot(time ~ expr, data = timings)
+```
